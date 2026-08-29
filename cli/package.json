@@ -1,0 +1,41 @@
+{
+  "name": "ai-integration-generator-cli",
+  "version": "1.0.0",
+  "description": "Terminal wizard for the AI Integration Generator - create a customized AI Server, MCP Server, AI Chat Client and docs for any existing API, right from the command line (create-vite / create-next-app style).",
+  "type": "module",
+  "bin": {
+    "ai-generate": "src/index.js"
+  },
+  "files": [
+    "src/",
+    "examples/",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "chat",
+    "cli",
+    "generator",
+    "scaffold",
+    "api"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/08Uzair/CUSTOM-MCP.git"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.7.0",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5"
+  }
+}

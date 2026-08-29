@@ -1,0 +1,12 @@
+GET /users
+POST /users
+GET /users/:id
+PUT /users/:id
+DELETE /users/:id
+POST /orders
+GET /products
+GET /products/:id
+
+# Express-style lines work too
+router.get('/categories', listCategories)
+app.post('/orders', createOrder)

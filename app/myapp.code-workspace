@@ -1,0 +1,15 @@
+{
+  "name": "myApp",
+  "folders": [
+    {
+      "path": "mcp-server"
+    },
+    {
+      "path": "ai-server"
+    },
+    {
+      "path": "ai-chat"
+    }
+  ],
+  "settings": {}
+}
