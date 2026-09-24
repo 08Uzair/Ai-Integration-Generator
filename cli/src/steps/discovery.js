@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import { parseRouteFile } from '../routeParser.js';
-import { apiFetch, transientAuth } from '../api.js';
+import { runDiscovery } from '../run.js';
 import { endpointKey } from '../state.js';
 import { resolveFilePath, fileNotResolvedError } from '../paths.js';
 import { log, select, text, spinner, promptOrCancel, stepHeader, gap } from '../ui.js';
@@ -60,15 +60,7 @@ export async function stepDiscovery(state) {
     const s = spinner();
     s.start(`Testing connection against ${state.apiBaseUrl} ...`);
     try {
-      const result = await apiFetch('/api/integrations/discover', {
-        method: 'POST',
-        body: {
-          appUrl: state.appUrl || undefined,
-          apiBaseUrl: state.apiBaseUrl,
-          auth: transientAuth(state),
-        },
-        timeoutMs: 60_000,
-      });
+      const result = await runDiscovery(state);
       state.discovery = result;
       if (result.endpoints?.length) {
         const seen = new Set(state.endpoints.map((e) => endpointKey(e)));

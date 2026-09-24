@@ -16,17 +16,9 @@ ai-generate      # or the shorter alias: aig
 
 ## How it works
 
-The CLI is a client of the **AI Integration Generator backend API** (same one the web wizard uses). Steps 6–8 (Preview, Generate, Download) need that backend reachable:
+The CLI is **fully standalone** — every part of the pipeline (connection probing, endpoint analysis, MCP tool mapping, project rendering, ZIP creation) runs inside the CLI process through a bundled generation engine. **No backend API and no MongoDB are required** — the only prerequisite is Node.js ≥ 18.
 
-| Service | Address |
-| ------- | ------- |
-| Backend API | `http://localhost:4000` (start with `npm run dev:backend`) |
-| MongoDB | `localhost:27017` (required by the backend) |
-
-> Point the CLI at any hosted backend instance with the `API_URL` environment variable:
-> ```powershell
-> $env:API_URL = "https://your-backend.example.com"; ai-generate
-> ```
+> Everything is generated locally on your machine, in the terminal.
 
 ## The 8 steps
 
@@ -38,8 +30,8 @@ The CLI is a client of the **AI Integration Generator backend API** (same one th
 | 4. API Discovery | Point at a `.txt` file with your endpoints — routes are parsed automatically (`GET /users`, `router.get('/x')`, `@app.post('/x')`, bare `/x` lines) and shown in a table; manual add/remove and an optional live connection test are also available |
 | 5. Request Payloads | Per POST/PUT/PATCH endpoint: paste a JSON example and it is flattened into a payload table — **nested objects are fully expanded** (`paymentInfo.id`, `paymentInfo.status`, ...), with add / edit / remove / required / description per row |
 | 6. Preview | Shows tools, ports and the environment contract |
-| 7. Generate | Starts the background job and tracks progress live |
-| 8. Download | Downloads the ZIP package(s) of your choice and can extract them locally |
+| 7. Generate | Runs the whole generation locally — validating → analyzing → rendering → zipping, tracked live |
+| 8. Download | Copies the generated ZIP package(s) of your choice into a folder and can extract them locally |
 
 ## Endpoints file
 
@@ -82,6 +74,13 @@ becomes rows `product`, `user`, `quantity`, `paymentInfo.id`, `paymentInfo.statu
 -h, --help      show help
 ```
 
+Environment variables:
+
+- `ALLOWED_PRIVATE_HOSTS` — extra private hosts allowed for connection probes (comma-separated). `localhost` and loopback addresses are already allowed since the CLI runs on your own machine, e.g.:
+  ```powershell
+  $env:ALLOWED_PRIVATE_HOSTS = "192.168.1.50"; ai-generate
+  ```
+
 ## What you get
 
 ```
@@ -94,4 +93,4 @@ becomes rows `product`, `user`, `quantity`, `paymentInfo.id`, `paymentInfo.statu
 └── .env.example       one per service (secrets always empty)
 ```
 
-See the repository at https://github.com/08Uzair/CUSTOM-MCP for the backend and the full project.
+See the repository at https://github.com/08Uzair/Ai-Integration-Generator for the backend and the full project.

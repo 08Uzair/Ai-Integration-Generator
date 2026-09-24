@@ -3,6 +3,25 @@ import { createAiProvider } from '../providers/ai-provider.js';
 import { McpClient } from '../mcp/mcp-client.js';
 
 /**
+ * Tells the model exactly how the chat UI renders answers, so replies come
+ * back as structured Markdown (paragraphs, tables, cards, images) instead of
+ * a wall of plain text. Keep this in sync with the AiChat component.
+ */
+const RESPONSE_FORMAT_GUIDE = [
+  'RESPONSE FORMAT - always answer in GitHub-flavored Markdown:',
+  '- Explanations and summaries: short paragraphs (2-4 sentences) separated by a blank line. Use **bold** for key terms and `code` for identifiers and values.',
+  '- Lists of records with fields (products, users, orders, carts, endpoints, ...): a Markdown table with one column per field and short headers.',
+  '- When a record has an image URL, add an image column using ![alt](absolute-url) so the chat shows the picture.',
+  '- A single record, or a summary of one item: use a fenced card block containing JSON on one line, for example:',
+  '```card',
+  '{"title":"Product name","subtitle":"Brand","image":"https://example.com/image.jpg","description":"Short description","fields":[{"label":"Price","value":"$19.99"},{"label":"Stock","value":"12"}],"link":{"label":"Open","url":"https://example.com/item"}}',
+  '```',
+  '- 2-4 records: use a fenced cards block containing an array of those objects instead of a table.',
+  '- Use bullet lists for steps or options. Never dump raw JSON or tool output unless the user explicitly asks for it.',
+  '- Only use values, image URLs and links that came from the tool results - write "-" for missing values and never invent data.',
+].join('\n');
+
+/**
  * Chat orchestrator - the AI conversation loop, fully streaming:
  *
  *   client messages
@@ -65,6 +84,7 @@ export class ChatService {
         `When the user asks about the application's data, call the matching tool, wait for its result, ` +
         `then answer using the returned data. Never invent data - if a tool fails or is missing, say so. ` +
         `Keep answers concise and technical.` + userContext +
+        `\n\n${RESPONSE_FORMAT_GUIDE}` +
         (payloadGuide ? `\n\n${payloadGuide}` : ''),
     };
   }

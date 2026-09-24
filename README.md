@@ -265,7 +265,7 @@ if (!completion.toolCalls?.length) {
 ├── backend/       Express REST API + job pipeline (validation, discovery, generation, zip, download)
 ├── generator/     Rendering engine: endpoint analysis → MCP tool definitions → template rendering → ZIP
 ├── frontend/      Next.js wizard (8 steps) + dashboard/installed integrations
-├── cli/           Terminal wizard (8 steps, @clack/prompts) — talks to the same backend API
+├── cli/           Terminal wizard (8 steps, @clack/prompts) — fully standalone, generates locally
 │   └── src/steps/ one file per wizard step (application, authentication, ... download)
 ├── app/           sample target application used for local testing (port 3005)
 ├── generated/     ZIP artifacts (git-ignored)
@@ -342,26 +342,46 @@ npm install        # first time only
 npm run dev
 ```
 
-### 💻 Terminal wizard (CLI)
+### ☁️ Deploy the web wizard to Vercel (single deploy, nothing else)
+
+The web wizard runs fully standalone: generation happens inside the Next.js app
+itself and sessions/artifacts are kept **in the browser** (IndexedDB). You do not
+need Render, MongoDB, Backblaze or any other service - one Vercel project is enough.
+
+**Option 1 - Vercel dashboard**
+
+1. Push this repo to GitHub.
+2. In Vercel, **Add New → Project** and import the repo.
+3. Under **Root Directory** select `frontend` (the framework is detected
+   automatically as Next.js).
+4. Leave every environment variable empty - **do not** set `NEXT_PUBLIC_API_URL`.
+5. Click **Deploy**. Done - open the URL and use the wizard.
+
+**Option 2 - Vercel CLI**
 
 ```powershell
-# From this repo — backend + CLI in one command
-.\run.ps1 -Cli              # first time: .\run.ps1 -Cli -Install
+cd frontend
+npx vercel        # answer the prompts (framework: Next.js, root: .)
+npx vercel --prod
+```
 
-# Or with the backend already running:
+> [!NOTE]
+> Because there is no shared server on Vercel, each browser keeps its own
+> generated integrations and ZIPs. Downloads work from the wizard and from the
+> dashboard in the same browser.
+
+### 💻 Terminal wizard (CLI)
+
+The CLI is **fully standalone** — it generates everything locally with no backend or MongoDB, so it runs anywhere Node ≥ 18 is installed.
+
+```powershell
+# From this repo (backend is optional and only needed by the web wizard):
 npm run cli
 
 # Or as a global package (shareable):
 npm install -g ai-integration-generator-cli
 ai-generate
 ```
-
-> [!TIP]
-> Point the CLI at a **hosted backend** instead of localhost:
->
-> ```powershell
-> $env:API_URL = "https://your-backend.example.com"; ai-generate
-> ```
 
 The terminal experience looks like this:
 
@@ -560,7 +580,7 @@ All responses use a `{ success, data, message }` envelope (or `{ success, error 
 | `npm run dev`          | Start backend + frontend together                                                             |
 | `npm run dev:backend`  | Backend only (:4000)                                                                          |
 | `npm run dev:frontend` | Frontend only (:3000)                                                                         |
-| `npm run cli`          | Terminal wizard (needs backend for steps 6–8)                                                 |
+| `npm run cli`          | Terminal wizard (fully standalone - generates locally)                                         |
 | `npm run lint`         | ESLint across all workspaces                                                                  |
 | `npm run format`       | Prettier                                                                                      |
 | `npm run build`        | Production build of the wizard frontend                                                       |
@@ -572,7 +592,6 @@ All responses use a `{ success, data, message }` envelope (or `{ success, error 
 | Symptom                                                         | Cause                   | Fix                                                                                                   |
 | --------------------------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
 | Backend won't start                                             | MongoDB not running     | Start `mongod`, verify port 27017                                                                     |
-| `Cannot reach the API at http://localhost:4000` (CLI steps 6–8) | Backend not running     | `npm run dev:backend` or `.\run.ps1`, then **Retry** (your data is preserved)                         |
 | Port 3000/4000 already in use                                   | Leftover processes      | `.\run.ps1 -Stop`                                                                                     |
 | `.\run.ps1` blocked by PowerShell                               | Execution policy        | `powershell -ExecutionPolicy Bypass -File .\run.ps1`                                                  |
 | `File not found` for endpoints file (CLI)                       | Wrong resolution folder | Use `./app/routes.txt` (repo-relative) or a full absolute path — the error lists every location tried |
@@ -584,6 +603,6 @@ All responses use a `{ success, data, message }` envelope (or `{ success, error 
 
 <div align="center">
 
-**Built by Uzer Qureshi for the AI era** — [Report an issue](https://github.com/08Uzair/CUSTOM-MCP/issues) · [npm package](https://www.npmjs.com/package/ai-integration-generator-cli)
+**Built by Uzer Qureshi for the AI era** — [Report an issue](https://github.com/08Uzair/Ai-Integration-Generator/issues) · [npm package](https://www.npmjs.com/package/ai-integration-generator-cli)
 
 </div>

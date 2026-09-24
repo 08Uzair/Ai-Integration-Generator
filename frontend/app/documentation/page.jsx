@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import {
   BookOpen,
@@ -40,7 +40,7 @@ const SECTIONS = [
 
 function Code({ children }) {
   return (
-    <code className="rounded-md border border-slate-700/60 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[0.85em] text-indigo-300">
+    <code className="rounded-md border border-zinc-800/60 bg-zinc-900/80 px-1.5 py-0.5 font-mono text-[0.85em] text-emerald-300">
       {children}
     </code>
   );
@@ -60,8 +60,8 @@ function CodeBlock({ title = 'terminal', code }) {
   };
 
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-lg shadow-black/30">
-      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-4 py-2">
+    <div className="mt-4 overflow-hidden rounded-xl border border-zinc-900 bg-black shadow-lg shadow-black/30">
+      <div className="flex items-center justify-between border-b border-zinc-900 bg-zinc-950/80 px-4 py-2">
         <span className="flex items-center gap-2 font-mono text-[11px] text-slate-400">
           <Terminal size={12} aria-hidden="true" /> {title}
         </span>
@@ -69,7 +69,7 @@ function CodeBlock({ title = 'terminal', code }) {
           type="button"
           onClick={copy}
           aria-label="Copy code block"
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-slate-400 transition hover:bg-slate-800 hover:text-white"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-slate-400 transition hover:bg-zinc-900 hover:text-white"
         >
           {copied ? (
             <CheckCircle2 size={12} className="text-emerald-400" />
@@ -90,8 +90,8 @@ function Callout({ tone = 'info', title, children }) {
   const styles = {
     info: {
       icon: Lightbulb,
-      header: 'text-indigo-300',
-      box: 'border-indigo-500/25 bg-indigo-500/[0.07]',
+      header: 'text-emerald-300',
+      box: 'border-emerald-500/25 bg-emerald-500/[0.07]',
     },
     tip: {
       icon: CheckCircle2,
@@ -121,7 +121,7 @@ function SectionHeading({ children }) {
   return (
     <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-white">
       <span
-        className="h-5 w-1 rounded-full bg-gradient-to-b from-indigo-400 to-violet-500"
+        className="h-5 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-green-500"
         aria-hidden="true"
       />
       {children}
@@ -157,7 +157,7 @@ function OverviewSection() {
             aria-hidden="true"
           />
           <span>
-            <strong className="text-slate-200">An MCP Server</strong> — a bridge that
+            <strong className="text-slate-200">An MCP Server</strong> â€” a bridge that
             converts your API into "tools" (e.g. <Code>get_users</Code>,{' '}
             <Code>create_user</Code>) an AI model can call safely.
           </span>
@@ -169,7 +169,7 @@ function OverviewSection() {
             aria-hidden="true"
           />
           <span>
-            <strong className="text-slate-200">An AI Server</strong> — a small backend
+            <strong className="text-slate-200">An AI Server</strong> â€” a small backend
             powered by Groq (fast, free-tier friendly) that understands questions and
             calls your tools to answer them.
           </span>
@@ -181,7 +181,7 @@ function OverviewSection() {
             aria-hidden="true"
           />
           <span>
-            <strong className="text-slate-200">An AI Chat Client</strong> — a friendly
+            <strong className="text-slate-200">An AI Chat Client</strong> â€” a friendly
             chat UI showing what the AI is doing while it works (thinking, calling tools,
             streaming answers).
           </span>
@@ -193,7 +193,7 @@ function OverviewSection() {
             aria-hidden="true"
           /> s
           <span>
-            <strong className="text-slate-200">Docker configuration</strong> — run all
+            <strong className="text-slate-200">Docker configuration</strong> â€” run all
             three services with a single <Code>docker compose up</Code> command.
           </span>
         </li>
@@ -204,7 +204,7 @@ function OverviewSection() {
             aria-hidden="true"
           />
           <span>
-            <strong className="text-slate-200">Documentation</strong> — a README set plus{' '}
+            <strong className="text-slate-200">Documentation</strong> â€” a README set plus{' '}
             <Code>.env.example</Code> files; you add your own secret keys locally, and
             they are never stored or exported by the generator.
           </span>
@@ -236,7 +236,7 @@ function QuickStartSection() {
             num: 1,
             title: 'Open the wizard',
             detail: 'Click "New Integration" in the top navigation (or visit /create).',
-            hint: 'Everything is a form — nothing to install yet.',
+            hint: 'Everything is a form â€” nothing to install yet.',
           },
           {
             num: 2,
@@ -250,13 +250,13 @@ function QuickStartSection() {
             title: 'Pick the authentication method',
             detail:
               'Choose how other programs (and the future chatbot) should prove their identity to your API: none, Bearer token, API key, custom header, or Basic auth.',
-            hint: 'Your credentials are only used for a live test — they are never saved.',
+            hint: 'Your credentials are only used for a live test â€” they are never saved.',
           },
           {
             num: 4,
             title: 'Confirm the AI provider',
             detail:
-              'Groq powers the chat. The model is fixed to <Code>openai/gpt-oss-120b</Code> for every generated project — no selection needed.',
+              'Groq powers the chat. The model is fixed to <Code>openai/gpt-oss-120b</Code> for every generated project â€” no selection needed.',
             hint: 'You will paste your own GROQ_API_KEY into the generated project later.',
           },
           {
@@ -264,7 +264,7 @@ function QuickStartSection() {
             title: 'Run the connection test',
             detail:
               'The generator checks that your API is reachable, detects JSON responses and looks for an OpenAPI specification automatically.',
-            hint: 'No OpenAPI found? No problem — you can add endpoints by hand.',
+            hint: 'No OpenAPI found? No problem â€” you can add endpoints by hand.',
           },
           {
             num: 6,
@@ -281,7 +281,7 @@ function QuickStartSection() {
           },
         ].map((step) => (
           <li key={step.num} className="flex gap-3">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-bold text-white shadow-lg shadow-indigo-500/30">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-green-500 text-xs font-bold text-white shadow-lg shadow-emerald-500/30">
               {step.num}
             </span>
             <div>
@@ -315,7 +315,7 @@ function ConceptsSection() {
     {
       term: 'API',
       plain:
-        'A set of rules your application exposes so other programs can talk to it — like a waiter between your data and the outside world.',
+        'A set of rules your application exposes so other programs can talk to it â€” like a waiter between your data and the outside world.',
       example: 'GET /users returns the list of users. POST /users creates a new one.',
     },
     {
@@ -327,7 +327,7 @@ function ConceptsSection() {
     {
       term: 'MCP (Model Context Protocol)',
       plain:
-        'An open standard that lets AI models discover and call tools — your API endpoints — in a structured, checkable way instead of free-form HTTP.',
+        'An open standard that lets AI models discover and call tools â€” your API endpoints â€” in a structured, checkable way instead of free-form HTTP.',
       example:
         'The generated mcp-server exposes get_user as a tool the AI can invoke reliably.',
     },
@@ -340,13 +340,13 @@ function ConceptsSection() {
     {
       term: 'SSE (Server-Sent Events)',
       plain:
-        'A simple way for the server to keep pushing text updates to the browser over one open connection — used to stream the AI answer word by word.',
+        'A simple way for the server to keep pushing text updates to the browser over one open connection â€” used to stream the AI answer word by word.',
       example: 'The chat client shows "Thinking..." then live typing.',
     },
     {
       term: 'Zod',
       plain:
-        'A JavaScript validation library that checks user input against a schema before it touches your code — bad input is rejected early with a clear message.',
+        'A JavaScript validation library that checks user input against a schema before it touches your code â€” bad input is rejected early with a clear message.',
       example: 'The AI-Chat server validates tool arguments before calling your API.',
     },
     {
@@ -365,8 +365,8 @@ function ConceptsSection() {
     {
       term: 'Tool-calling loop',
       plain:
-        'A conversation between the AI and your API: AI decides which tool to call → your API answers → AI forms the final human-friendly reply.',
-      example: 'User: "How many users?" → AI calls get_users → AI answers "42 users."',
+        'A conversation between the AI and your API: AI decides which tool to call â†’ your API answers â†’ AI forms the final human-friendly reply.',
+      example: 'User: "How many users?" â†’ AI calls get_users â†’ AI answers "42 users."',
     },
   ];
 
@@ -381,9 +381,9 @@ function ConceptsSection() {
         {terms.map((item) => (
           <div
             key={item.term}
-            className="rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3"
+            className="rounded-xl border border-zinc-900 bg-zinc-950/40 px-4 py-3"
           >
-            <dt className="text-sm font-bold text-indigo-300">{item.term}</dt>
+            <dt className="text-sm font-bold text-emerald-300">{item.term}</dt>
             <dd className="mt-1 text-sm leading-relaxed text-slate-400">{item.plain}</dd>
             <dd className="mt-1.5 font-mono text-xs text-slate-500">
               Example: {item.example}
@@ -405,44 +405,44 @@ function ArchitectureSection() {
       </p>
       <CodeBlock
         title="platform - request flow"
-        code={`Browser ──► Frontend (Next.js :3000)
-     │ REST / SSE
-     ▼
-Backend (Express :4000) ──► MongoDB (Mongoose)
-     │
-     ├── generator (@aig/generator)
-     │     ├── analyzers   : validate → discover → OpenAPI → endpoints
-     │     ├── templates   : ai-server / mcp-server / ai-chat / project-docs
-     │     └── services    : configuration · generation · documentation
-     │                        + zip (archiver) + SSRF-safe fetcher
-     ▼
+        code={`Browser â”€â”€â–º Frontend (Next.js :3000)
+     â”‚ REST / SSE
+     â–¼
+Backend (Express :4000) â”€â”€â–º MongoDB (Mongoose)
+     â”‚
+     â”œâ”€â”€ generator (@aig/generator)
+     â”‚     â”œâ”€â”€ analyzers   : validate â†’ discover â†’ OpenAPI â†’ endpoints
+     â”‚     â”œâ”€â”€ templates   : ai-server / mcp-server / ai-chat / project-docs
+     â”‚     â””â”€â”€ services    : configuration Â· generation Â· documentation
+     â”‚                        + zip (archiver) + SSRF-safe fetcher
+     â–¼
 generated/<id>/  (project + 4 ZIPs, TTL-cleaned)`}
       />
-      <SubHeading>Data flow — what happens when you press each wizard button</SubHeading>
+      <SubHeading>Data flow â€” what happens when you press each wizard button</SubHeading>
       <ol className="mt-2 list-inside list-decimal space-y-1.5 text-sm leading-relaxed text-slate-400">
         <li>
-          <Code>POST /api/integrations/validate</Code> — quick preflight: is the server
+          <Code>POST /api/integrations/validate</Code> â€” quick preflight: is the server
           reachable, does the endpoint answer with JSON?
         </li>
         <li>
-          <Code>POST /api/integrations/discover</Code> — deep scan: looks for an OpenAPI
+          <Code>POST /api/integrations/discover</Code> â€” deep scan: looks for an OpenAPI
           document and analyzes every endpoint it finds (or lets you add them manually).
         </li>
         <li>
-          <Code>POST /api/integrations/preview</Code> — builds the plan: which MCP tools
+          <Code>POST /api/integrations/preview</Code> â€” builds the plan: which MCP tools
           are created, which ports each service uses, which environment variables are
           needed.
         </li>
         <li>
-          <Code>POST /api/integrations/generate</Code> — saves your integration and starts
+          <Code>POST /api/integrations/generate</Code> â€” saves your integration and starts
           a background job.
         </li>
         <li>
-          <Code>GET /status</Code> — the wizard polls the job, showing step-by-step
+          <Code>GET /status</Code> â€” the wizard polls the job, showing step-by-step
           progress in real time.
         </li>
         <li>
-          <Code>GET /download?package=</Code> — streams the complete ZIP or a per-service
+          <Code>GET /download?package=</Code> â€” streams the complete ZIP or a per-service
           ZIP to your browser.
         </li>
       </ol>
@@ -468,29 +468,29 @@ function StructureSection() {
       <CodeBlock
         title="ai-integration-generator/"
         code={`ai-integration-generator/
-├── frontend/          # Next.js wizard UI (the screens you are clicking right now)
-│   ├── app/           #   /dashboard /create /integrations/[id] /documentation /settings
-│   ├── components/    #   ui/ (buttons, cards...) wizard/ integration/ tables
-│   ├── hooks/         #   useIntegrations, pollers
-│   └── lib/           #   api.js (fetch + error envelopes), validators.js
-├── backend/           # Express REST API + background job pipeline
-│   └── src/           #   config/ controllers/ routes/ services/ middleware/
-│                      #   models/ validators/ utils/
-├── generator/         # the engine that builds projects (@aig/generator)
-│   ├── templates/     #   ai-server/ mcp-server/ ai-chat/ project-docs/
-│   ├── analyzers/     #   api/ openapi/ endpoint analyzers + discovery
-│   ├── services/      #   generation/ configuration/ documentation
-│   ├── adapters/      #   api-adapter (endpoint → MCP tool registry)
-│   └── zip/           #   zip.service (path-traversal-safe archives)
-├── generated/         # artifact output (git-ignored - not committed)
-├── docker-compose.yml
-└── README.md`}
+â”œâ”€â”€ frontend/          # Next.js wizard UI (the screens you are clicking right now)
+â”‚   â”œâ”€â”€ app/           #   /dashboard /create /integrations/[id] /documentation /settings
+â”‚   â”œâ”€â”€ components/    #   ui/ (buttons, cards...) wizard/ integration/ tables
+â”‚   â”œâ”€â”€ hooks/         #   useIntegrations, pollers
+â”‚   â””â”€â”€ lib/           #   api.js (fetch + error envelopes), validators.js
+â”œâ”€â”€ backend/           # Express REST API + background job pipeline
+â”‚   â””â”€â”€ src/           #   config/ controllers/ routes/ services/ middleware/
+â”‚                      #   models/ validators/ utils/
+â”œâ”€â”€ generator/         # the engine that builds projects (@aig/generator)
+â”‚   â”œâ”€â”€ templates/     #   ai-server/ mcp-server/ ai-chat/ project-docs/
+â”‚   â”œâ”€â”€ analyzers/     #   api/ openapi/ endpoint analyzers + discovery
+â”‚   â”œâ”€â”€ services/      #   generation/ configuration/ documentation
+â”‚   â”œâ”€â”€ adapters/      #   api-adapter (endpoint â†’ MCP tool registry)
+â”‚   â””â”€â”€ zip/           #   zip.service (path-traversal-safe archives)
+â”œâ”€â”€ generated/         # artifact output (git-ignored - not committed)
+â”œâ”€â”€ docker-compose.yml
+â””â”€â”€ README.md`}
       />
       <Callout tone="info" title="Where should I start reading?">
         <ul className="list-inside list-disc space-y-1">
           <li>
             <strong>Frontend newcomer?</strong> Start in{' '}
-            <Code>frontend/components/wizard/</Code> — each file is one wizard screen.
+            <Code>frontend/components/wizard/</Code> â€” each file is one wizard screen.
           </li>
           <li>
             <strong>Backend newcomer?</strong> Start in <Code>backend/src/routes/</Code>{' '}
@@ -526,7 +526,7 @@ function InstallationSection() {
             className="mt-0.5 shrink-0 text-emerald-400"
             aria-hidden="true"
           />{' '}
-          MongoDB 6+ — local (<Code>mongod</Code>) or via{' '}
+          MongoDB 6+ â€” local (<Code>mongod</Code>) or via{' '}
           <Code>docker compose up mongo</Code>
         </li>
         <li className="flex gap-2">
@@ -550,10 +550,10 @@ npm run dev:frontend            # UI on   :3000  (or simply: npm run dev for bot
         SSRF protection blocks private networks by default. During development add your
         local host to <Code>ALLOWED_PRIVATE_HOSTS</Code>, e.g.{' '}
         <Code>ALLOWED_PRIVATE_HOSTS=localhost,127.0.0.1</Code>. This setting is for
-        development only — never set it in production.
+        development only â€” never set it in production.
       </Callout>
       <Callout tone="tip" title="Alternative one-command start">
-        On Windows you can also use <Code>.\run.ps1</Code> from the repository root — it
+        On Windows you can also use <Code>.\run.ps1</Code> from the repository root â€” it
         starts backend and frontend together and cleans up on <Code>Ctrl+C</Code>.
       </Callout>
     </section>
@@ -570,7 +570,7 @@ function WorkflowSection() {
     {
       name: 'Authentication',
       detail:
-        'none · bearer · api-key · custom-header · basic. Credentials are used transiently for live tests and never stored or exported.',
+        'none Â· bearer Â· api-key Â· custom-header Â· basic. Credentials are used transiently for live tests and never stored or exported.',
     },
     {
       name: 'AI configuration',
@@ -612,9 +612,9 @@ function WorkflowSection() {
         {lines.map((s, idx) => (
           <li
             key={s.name}
-            className="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3"
+            className="flex gap-3 rounded-xl border border-zinc-900 bg-zinc-950/40 px-4 py-3"
           >
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-800 text-[11px] font-bold text-indigo-300">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-[11px] font-bold text-emerald-300">
               {idx + 1}
             </span>
             <div className="text-sm leading-relaxed text-slate-400">
@@ -635,22 +635,22 @@ function McpSection() {
       <p className="mt-3 text-sm leading-relaxed text-slate-400">
         Runs on port <Code>5000</Code> (<Code>MCP_SERVER_PORT</Code>). It implements the
         MCP Streamable HTTP transport on <Code>POST /mcp</Code> using the official{' '}
-        <Code>@modelcontextprotocol/sdk</Code> — with session management, tool listing and
+        <Code>@modelcontextprotocol/sdk</Code> â€” with session management, tool listing and
         tool execution.
       </p>
       <p className="mt-3 text-sm text-slate-400">
         Tools are generated as a <strong className="text-slate-200">data registry</strong>{' '}
         (<Code>src/config/tools.js</Code>) consumed by one generic executor in{' '}
-        <Code>src/services/endpoint.service.js</Code>. Because tools are data — not code —
+        <Code>src/services/endpoint.service.js</Code>. Because tools are data â€” not code â€”
         a generated server can never turn into an unrestricted HTTP proxy.
       </p>
       <CodeBlock
         title="src/config/tools.js - naming convention"
-        code={`GET    /users       → get_users       (list)
-GET    /users/:id   → get_user        (single)
-POST   /users       → create_user
-PUT    /users/:id   → update_user
-DELETE /users/:id   → delete_user`}
+        code={`GET    /users       â†’ get_users       (list)
+GET    /users/:id   â†’ get_user        (single)
+POST   /users       â†’ create_user
+PUT    /users/:id   â†’ update_user
+DELETE /users/:id   â†’ delete_user`}
       />
       <p className="mt-3 text-sm text-slate-400">
         Every tool comes with: a name, a description, a JSON-Schema input, Zod validation,
@@ -658,7 +658,7 @@ DELETE /users/:id   → delete_user`}
         normalized JSON responses. There is no unrestricted HTTP-proxy tool.
       </p>
       <Callout tone="info" title="Why does this matter for beginners?">
-        Human developers can call your API any way they like. AIs can't guess — they need
+        Human developers can call your API any way they like. AIs can't guess â€” they need
         a precise contract. The MCP server is that contract: it tells the model exactly
         which operations exist and exactly what input each one accepts.
       </Callout>
@@ -675,11 +675,11 @@ function AiSection() {
         conversation loop between the user, the Groq model and your API.
       </p>
       <CodeBlock
-        title="POST /api/chat → SSE events"
+        title="POST /api/chat â†’ SSE events"
         code={`status     "Thinking...", "Calling get_users..."
 tool_call  { name, args }
 tool_result{ name, success, summary }
-delta      { text }      ← streamed answer
+delta      { text }      â† streamed answer
 done / error`}
       />
       <ul className="mt-3 list-inside space-y-1.5 text-sm leading-relaxed text-slate-400">
@@ -706,7 +706,7 @@ done / error`}
             className="mt-0.5 shrink-0 text-emerald-400"
             aria-hidden="true"
           />{' '}
-          Provider abstraction in <Code>src/providers/</Code> — Groq is implemented via
+          Provider abstraction in <Code>src/providers/</Code> â€” Groq is implemented via
           its OpenAI-compatible REST API; new providers just implement{' '}
           <Code>complete()</Code> + <Code>stream()</Code>.
         </li>
@@ -716,7 +716,7 @@ done / error`}
             className="mt-0.5 shrink-0 text-emerald-400"
             aria-hidden="true"
           />{' '}
-          <Code>GROQ_API_KEY</Code> is read from the environment — never hardcoded, never
+          <Code>GROQ_API_KEY</Code> is read from the environment â€” never hardcoded, never
           exported.
         </li>
       </ul>
@@ -769,7 +769,7 @@ function SecuritySection() {
       title: 'No secret persistence',
       detail: (
         <>
-          Auth values are transient (live tests only) — never stored in MongoDB and never
+          Auth values are transient (live tests only) â€” never stored in MongoDB and never
           written into ZIPs. Generated projects ship <Code>.env.example</Code>{' '}
           placeholders.
         </>
@@ -793,13 +793,13 @@ function SecuritySection() {
     <section className="card-surface animate-fade-in-up p-6">
       <SectionHeading>Security</SectionHeading>
       <p className="mt-3 text-sm text-slate-400">
-        Security is enforced at every layer — here is what each control protects against:
+        Security is enforced at every layer â€” here is what each control protects against:
       </p>
       <ul className="mt-4 space-y-2.5">
         {items.map((item) => (
           <li
             key={item.title}
-            className="flex gap-3 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm leading-relaxed text-slate-400"
+            className="flex gap-3 rounded-xl border border-zinc-900 bg-zinc-950/40 px-4 py-3 text-sm leading-relaxed text-slate-400"
           >
             <ShieldCheck
               size={16}
@@ -824,21 +824,21 @@ function DeploymentSection() {
       <CodeBlock
         title="terminal - platform"
         code={`docker compose up --build
-# mongo:27017 · backend:4000 · frontend:3000`}
+# mongo:27017 Â· backend:4000 Â· frontend:3000`}
       />
       <SubHeading>Running a generated project</SubHeading>
       <CodeBlock
         title="terminal - generated project"
         code={`cd generated-ai-integration
 docker compose up --build
-# AiChat.jsx → copy into your app (browser)
-# AI Server  → http://localhost:4000
-# MCP Server → http://localhost:5000`}
+# AiChat.jsx â†’ copy into your app (browser)
+# AI Server  â†’ http://localhost:4000
+# MCP Server â†’ http://localhost:5000`}
       />
       <Callout tone="warn" title="Deploying to a hosting platform?">
         Ports are configurable via environment variables. Always set secrets (
         <Code>GROQ_API_KEY</Code>, <Code>TARGET_API_*</Code>) as environment variables in
-        your hosting platform — never commit <Code>.env</Code> files to git.
+        your hosting platform â€” never commit <Code>.env</Code> files to git.
       </Callout>
     </section>
   );
@@ -849,9 +849,9 @@ function TroubleshootingSection() {
     {
       symptom: 'Backend starts but says "MongoDB connection failed"',
       causes: [
-        'MongoDB is not running on :27017 — start it with <Code>mongod</Code> or <Code>docker compose up mongo</Code>.',
+        'MongoDB is not running on :27017 â€” start it with <Code>mongod</Code> or <Code>docker compose up mongo</Code>.',
         'MONGO_URI in <Code>.env</Code> is wrong or points to an unreachable Atlas cluster.',
-        'Using Atlas behind a VPN/DNS filter — try adding public resolvers or check the cluster still exists.',
+        'Using Atlas behind a VPN/DNS filter â€” try adding public resolvers or check the cluster still exists.',
       ],
       fix: 'Confirm connectivity first: <Code>mongosh mongodb://localhost:27017 --eval "db.runCommand({ping:1})"</Code>.',
     },
@@ -898,13 +898,13 @@ function TroubleshootingSection() {
     <section className="card-surface animate-fade-in-up p-6">
       <SectionHeading>Troubleshooting</SectionHeading>
       <p className="mt-3 text-sm text-slate-400">
-        The four most common issues — with the likely causes and what to do about them:
+        The four most common issues â€” with the likely causes and what to do about them:
       </p>
       <div className="mt-4 space-y-4">
         {issues.map((issue) => (
           <div
             key={issue.symptom}
-            className="rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+            className="rounded-xl border border-zinc-900 bg-zinc-950/40 p-4"
           >
             <p className="flex items-start gap-2 text-sm font-semibold text-amber-300">
               <Wrench size={14} className="mt-0.5 shrink-0" aria-hidden="true" />{' '}
@@ -963,7 +963,7 @@ export default function DocumentationPage() {
         <aside className="w-full shrink-0 lg:w-64">
           <nav
             aria-label="Documentation sections"
-            className="sticky top-20 space-y-1 rounded-2xl border border-slate-800 bg-slate-900/60 p-3 backdrop-blur-sm"
+            className="sticky top-20 space-y-1 rounded-2xl border border-zinc-900 bg-zinc-950/60 p-3 backdrop-blur-sm"
           >
             <p className="flex items-center gap-1.5 px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               <FileCode2 size={12} aria-hidden="true" /> Guide sections
@@ -976,35 +976,35 @@ export default function DocumentationPage() {
                 aria-current={active === section.id ? 'true' : undefined}
                 className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm transition ${
                   active === section.id
-                    ? 'bg-gradient-to-r from-indigo-500/20 to-violet-500/10 font-medium text-indigo-300 ring-1 ring-inset ring-indigo-500/30'
-                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+                    ? 'bg-gradient-to-r from-emerald-500/20 to-green-500/10 font-medium text-emerald-300 ring-1 ring-inset ring-emerald-500/30'
+                    : 'text-slate-400 hover:bg-zinc-900/60 hover:text-white'
                 }`}
               >
                 <section.icon size={15} aria-hidden="true" /> {section.title}
               </button>
             ))}
-            <div className="mt-2 border-t border-slate-800 px-3 pb-1 pt-3">
+            <div className="mt-2 border-t border-zinc-900 px-3 pb-1 pt-3">
               <p className="text-xs text-slate-500">Still stuck?</p>
               <Link
                 href="/create"
-                className="mt-1 inline-block text-xs font-medium text-indigo-400 transition hover:text-indigo-300"
+                className="mt-1 inline-block text-xs font-medium text-emerald-400 transition hover:text-emerald-300"
               >
-                Try the 5-minute quick start →
+                Try the 5-minute quick start â†’
               </Link>
             </div>
           </nav>
         </aside>
 
         <article className="mt-6 min-w-0 flex-1 space-y-6 lg:mt-0">
-          <header className="overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 p-6">
-            <p className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-medium text-indigo-300">
+          <header className="overflow-hidden rounded-2xl border border-zinc-900 bg-gradient-to-br from-zinc-950 via-zinc-950 to-emerald-950/40 p-6">
+            <p className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
               <BookOpen size={12} aria-hidden="true" /> Beginner-friendly guide
             </p>
             <h1 className="mt-3 text-2xl font-extrabold tracking-tight">
               Documentation <span className="text-gradient">made simple</span>
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-400">
-              Everything you need to understand this platform — and the projects it
+              Everything you need to understand this platform â€” and the projects it
               generates. Written for junior developers: plain-English explanations, real
               examples, and no assumed knowledge.
             </p>

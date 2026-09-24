@@ -12,6 +12,8 @@ export default [
       'backend/coverage/**',
       // Templates contain {{TOKEN}} placeholders - invalid JS by design.
       'generator/templates/**',
+      'cli/engine/templates/**',
+      'frontend/engine/templates/**',
     ],
   },
   js.configs.recommended,

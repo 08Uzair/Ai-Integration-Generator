@@ -1,18 +1,17 @@
 <#
 .SYNOPSIS
-    AI Integration Generator - Run all services in one VS Code terminal.
+    AI Integration Generator - run the wizard locally (no backend, no database).
 
 .SERVICES
-    Backend API  : http://localhost:4000
-    Wizard UI    : http://localhost:3000
-    MongoDB      : localhost:27017 (must already be running)
+    Wizard UI    : http://localhost:3000   (Next.js app with the bundled engine)
+    Terminal CLI : cli/                    (fully standalone)
 
 .USAGE
     .\run.ps1
     .\run.ps1 -Install
     .\run.ps1 -Dev
     .\run.ps1 -Stop
-    .\run.ps1 -Cli          (start backend + launch the terminal wizard)
+    .\run.ps1 -Cli          (launch the terminal wizard)
     .\run.ps1 -Cli -Install (install everything, then launch the terminal wizard)
 
     Ctrl+C also stops all services.
@@ -44,10 +43,10 @@ function Stop-AIG {
     $found = $false
 
     # --------------------------------------------------------
-    # 1. STOP SERVICES BY PORT (wizard 3000, backend 4000)
+    # 1. STOP THE WIZARD BY PORT (3000)
     # --------------------------------------------------------
 
-    $ports = @(3000, 4000)
+    $ports = @(3000)
 
     foreach ($port in $ports) {
 
@@ -102,7 +101,7 @@ function Stop-AIG {
     # 2. FIND AIG NODE PROCESSES
     #
     # Catches node processes whose command line references this
-    # project (e.g. `node src/server.js` started manually).
+    # project (e.g. a Next.js dev server started manually).
     # --------------------------------------------------------
 
     Write-Host ""
@@ -247,282 +246,65 @@ Write-Host "Root: $Root" -ForegroundColor DarkGray
 Write-Host "Node: $nodeExe" -ForegroundColor DarkGray
 
 # ============================================================
-# MONGODB CHECK (warning only - user may use alternatives)
-# ============================================================
-
-$mongoOk = Test-NetConnection -ComputerName "localhost" -Port 27017 `
-    -WarningAction SilentlyContinue -InformationLevel Quiet
-
-if ($mongoOk) {
-
-    Write-Host "[MONGO] MongoDB reachable on localhost:27017" -ForegroundColor Green
-}
-else {
-
-    Write-Host "[MONGO] WARNING: MongoDB not reachable on localhost:27017" -ForegroundColor Yellow
-    Write-Host "       Start MongoDB first (e.g. mongod) or the backend will fail." -ForegroundColor Yellow
-}
-
-# ============================================================
-# SERVICES
-# ============================================================
-
-$Services = @(
-    @{
-        Name = "BACKEND"
-        Folder = "backend"
-        Command = "node src/server.js"
-    },
-    @{
-        Name = "CLIENT"
-        Folder = "frontend"
-        Command = "npm run dev"
-    }
-)
-
-# ============================================================
 # INSTALL
 # ============================================================
 
 if ($Install) {
 
     Write-Host ""
-    Write-Host "Installing dependencies..." -ForegroundColor Cyan
+    Write-Host "Installing dependencies (npm workspaces)..." -ForegroundColor Cyan
     Write-Host ""
 
-    foreach ($service in $Services) {
+    Push-Location $Root
 
-        $folder = Join-Path $Root $service.Folder
+    try {
 
-        if (-not (Test-Path $folder)) {
+        npm install
 
-            Write-Host `
-                "[$($service.Name)] Folder not found: $folder" `
-                -ForegroundColor Red
+        if ($LASTEXITCODE -ne 0) {
 
+            Write-Host ""
+            Write-Host "npm install failed." -ForegroundColor Red
             exit 1
         }
 
-        Write-Host `
-            "[$($service.Name)] npm install" `
-            -ForegroundColor Yellow
+    }
+    finally {
 
-        Push-Location $folder
-
-        try {
-
-            npm install
-
-            if ($LASTEXITCODE -ne 0) {
-
-                Write-Host `
-                    "[$($service.Name)] npm install failed." `
-                    -ForegroundColor Red
-
-                exit 1
-            }
-
-        }
-        finally {
-
-            Pop-Location
-        }
-
-        Write-Host ""
+        Pop-Location
     }
 
-    Write-Host `
-        "All dependencies installed successfully." `
-        -ForegroundColor Green
+    Write-Host ""
+    Write-Host "All dependencies installed successfully." -ForegroundColor Green
 }
 
 # ============================================================
 # CHECK NODE_MODULES
 #
-# This repo uses npm workspaces, so dependencies may be
-# hoisted into the root node_modules folder. Accept either.
+# This repo uses npm workspaces, so dependencies are hoisted
+# into the root node_modules folder.
 # ============================================================
 
 $rootModules = Join-Path $Root "node_modules"
 
-foreach ($service in $Services) {
-
-    $folder = Join-Path $Root $service.Folder
-
-    if (-not (Test-Path $folder)) {
-
-        Write-Host ""
-        Write-Host `
-            "[$($service.Name)] Folder not found." `
-            -ForegroundColor Red
-
-        exit 1
-    }
-
-    $serviceModules = Join-Path $folder "node_modules"
-
-    if (-not ((Test-Path $serviceModules) -or (Test-Path $rootModules))) {
-
-        Write-Host ""
-        Write-Host `
-            "[$($service.Name)] node_modules not found." `
-            -ForegroundColor Red
-
-        Write-Host `
-            "Run: .\run.ps1 -Install" `
-            -ForegroundColor Yellow
-
-        exit 1
-    }
-}
-
-# ============================================================
-# BACKGROUND JOBS
-# ============================================================
-
-$jobs = @()
-
-function Start-AIGJob {
-
-    param(
-        [string]$Name,
-        [string]$Folder,
-        [string]$Command,
-        [bool]$DevMode
-    )
-
-    $servicePath = Join-Path $Root $Folder
+if (-not (Test-Path $rootModules)) {
 
     Write-Host ""
-    Write-Host `
-        "[$Name] Starting..." `
-        -ForegroundColor Green
+    Write-Host "node_modules not found." -ForegroundColor Red
+    Write-Host "Run: .\run.ps1 -Install" -ForegroundColor Yellow
 
-    $job = Start-Job `
-        -Name "AIG-$Name" `
-        -ScriptBlock {
-
-            param(
-                $ServicePath,
-                $Command,
-                $DevMode
-            )
-
-            Set-Location $ServicePath
-
-            # ------------------------------------------------
-            # NEXT.JS
-            # ------------------------------------------------
-
-            if ($Command -eq "npm run dev") {
-
-                npm run dev
-
-                return
-            }
-
-            # ------------------------------------------------
-            # NODE SERVICES
-            # ------------------------------------------------
-
-            if ($Command -eq "node src/server.js") {
-
-                if ($DevMode) {
-
-                    node --watch src/server.js
-
-                }
-                else {
-
-                    node src/server.js
-                }
-            }
-
-        } `
-        -ArgumentList $servicePath, $Command, $DevMode
-
-    return $job
+    exit 1
 }
-
-# ============================================================
-# START BACKEND
-# ============================================================
-
-$backendJob = Start-AIGJob `
-    -Name "BACKEND" `
-    -Folder "backend" `
-    -Command "node src/server.js" `
-    -DevMode $Dev
-
-$jobs += $backendJob
 
 # ============================================================
 # CLI MODE (terminal wizard)
 #
-# The terminal wizard needs a real foreground terminal for its
-# interactive prompts, so it is NOT started as a background job.
-# Backend runs in the background, then the CLI takes over the
-# terminal until the user finishes (or presses Ctrl+C).
+# The CLI is fully standalone - it runs the bundled engine
+# in-process and needs no backend or database.
 # ============================================================
 
 if ($Cli) {
 
-    if ($Install) {
-
-        Write-Host ""
-        Write-Host "[CLI] npm install" -ForegroundColor Yellow
-
-        Push-Location (Join-Path $Root "cli")
-
-        try {
-
-            npm install
-
-            if ($LASTEXITCODE -ne 0) {
-                exit 1
-            }
-
-        }
-        finally {
-
-            Pop-Location
-        }
-    }
-
-    Write-Host ""
-    Write-Host "Waiting for backend on http://localhost:4000 ..." -ForegroundColor Cyan
-
-    $backendHealthy = $false
-
-    for ($i = 0; $i -lt 30; $i++) {
-
-        Start-Sleep -Seconds 1
-
-        $ok = Test-NetConnection `
-            -ComputerName "localhost" `
-            -Port 4000 `
-            -WarningAction SilentlyContinue `
-            -InformationLevel Quiet
-
-        if ($ok) {
-
-            $backendHealthy = $true
-            break
-        }
-    }
-
-    if (-not $backendHealthy) {
-
-        Write-Host ""
-        Write-Host "Backend did not become reachable - check MongoDB and the backend logs above." -ForegroundColor Red
-        Write-Host ""
-
-        Stop-AIG
-
-        exit 1
-    }
-
-    Write-Host "[BACKEND] http://localhost:4000" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Launching the terminal wizard (all 8 steps run here)..." -ForegroundColor Green
     Write-Host "--------------------------------------------------" -ForegroundColor DarkGray
@@ -537,20 +319,6 @@ if ($Cli) {
     finally {
 
         Pop-Location
-
-        foreach ($job in $jobs) {
-
-            try {
-
-                Stop-Job -Job $job -ErrorAction SilentlyContinue
-                Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
-
-            }
-            catch {
-            }
-        }
-
-        Stop-AIG
     }
 
     exit 0
@@ -558,15 +326,30 @@ if ($Cli) {
 
 # ============================================================
 # START CLIENT (wizard)
+#
+# The wizard runs standalone: the generation engine is bundled
+# into the Next.js app, so no backend API or MongoDB is needed.
 # ============================================================
 
-$clientJob = Start-AIGJob `
-    -Name "CLIENT" `
-    -Folder "frontend" `
-    -Command "npm run dev" `
-    -DevMode $false
+$servicePath = Join-Path $Root "frontend"
 
-$jobs += $clientJob
+Write-Host ""
+Write-Host "[CLIENT] Starting..." -ForegroundColor Green
+
+$clientJob = Start-Job `
+    -Name "AIG-CLIENT" `
+    -ScriptBlock {
+
+        param($ServicePath)
+
+        Set-Location $ServicePath
+
+        npm run dev
+
+    } `
+    -ArgumentList $servicePath
+
+$jobs = @($clientJob)
 
 # ============================================================
 # STARTUP COMPLETE
@@ -579,7 +362,6 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host ""
 
 Write-Host "[CLIENT]  http://localhost:3000" -ForegroundColor Cyan
-Write-Host "[BACKEND] http://localhost:4000" -ForegroundColor Cyan
 
 Write-Host ""
 

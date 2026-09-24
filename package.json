@@ -11,12 +11,11 @@
     "cli"
   ],
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
-    "dev:backend": "npm run dev -w backend",
+    "dev": "npm run dev -w frontend",
     "dev:frontend": "npm run dev -w frontend",
     "cli": "npm run start -w cli",
     "build": "npm run build -w frontend",
-    "start:backend": "npm run start -w backend",
+    "start": "npm run start -w frontend",
     "lint": "eslint . --ignore-pattern 'generated' --ignore-pattern 'frontend/.next'",
     "format": "prettier --write \"**/*.{js,jsx,json,md,yml,yaml}\" --ignore-path .gitignore"
   },

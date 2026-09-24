@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { BookOpen, LayoutDashboard, Plus, Settings, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -14,10 +14,10 @@ export function NavBar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-zinc-900/80 bg-black/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 transition group-hover:shadow-indigo-500/50">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg shadow-emerald-500/30 transition group-hover:shadow-emerald-500/50">
             <Zap size={17} className="text-white" aria-hidden="true" />
           </span>
           <span className="hidden text-sm font-bold tracking-tight sm:block">
@@ -34,8 +34,8 @@ export function NavBar() {
                 href={link.href}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   active
-                    ? 'bg-slate-800 text-white ring-1 ring-inset ring-slate-700'
-                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-white'
+                    ? 'bg-zinc-900 text-white ring-1 ring-inset ring-zinc-800'
+                    : 'text-slate-400 hover:bg-zinc-900/60 hover:text-white'
                 }`}
               >
                 <link.icon size={13} aria-hidden="true" />
@@ -45,7 +45,7 @@ export function NavBar() {
           })}
           <Link
             href="/create"
-            className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg shadow-indigo-500/25 transition hover:brightness-110"
+            className="ml-1 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:brightness-110"
           >
             <Plus size={13} aria-hidden="true" /> New Integration
           </Link>

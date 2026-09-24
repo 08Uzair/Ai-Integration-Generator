@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Children,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -13,6 +20,8 @@ import {
   AlertTriangle,
   Wrench,
   ServerCog,
+  ExternalLink,
+  ImageOff,
 } from "lucide-react";
 
 /**
@@ -27,23 +36,35 @@ import {
  *
  *   <AiChat />  ->  ai-server (Groq + tool calling)  ->  mcp-server  ->  your API
  *
- * User ID:
- *   - The component reads the user id from localStorage (key: `userId`
- *     by default, also falls back to `userID` / `user_id` / `userid`).
- *   - If no id exists yet, one is generated automatically and persisted.
- *   - It is sent with EVERY chat request and the ai-server injects it into
- *     tool payloads wherever a tool schema requires a user id.
+ * User ID (checked in this order):
+ *   1. `resolveUserId()` prop - return the host app's logged-in user id.
+ *   2. `localStorage.profile` (result._id / result.id / result.userId) -
+ *      the common shape used by MERN e-commerce apps.
+ *   3. `userId` localStorage key (default; falls back to `userID`,
+ *      `user_id`, `userid`) - useful for apps without authentication.
+ *   4. If nothing exists yet, one is generated automatically and persisted.
+ *   - The resolved id is sent with EVERY chat request and the ai-server
+ *     injects it into tool payloads wherever a tool schema requires it.
  *   - Click the user chip in the header to change the id (persisted).
  *
  * Layout:
  *   - Fills the entire viewport (fixed inset-0). The message list scrolls;
  *     the header and input bar stay pinned to the top/bottom.
  *
+ * Rendering (assistant answers are GitHub-flavored Markdown):
+ *   - Paragraphs, lists, headings, code, links and tables are styled for chat.
+ *   - Lists of records render as tables; image URLs in cells are shown as
+ *     thumbnails. Bare image URLs in text are shown inline.
+ *   - A ```card fenced block containing JSON ({ title, subtitle, image,
+ *     description, fields, link }) renders as a card; a ```cards block with
+ *     an array renders a card grid.
+ *
  * Props:
  *   apiUrl       AI server base URL (default: the generated port)
  *   projectName  Title shown in the header
  *   subtitle     Small text under the title
  *   userIdKey    localStorage key for the user id (default 'userId')
+ *   resolveUserId()  optional; return the host app's current user id
  *   onUserIdChange(userId)  optional callback when the id changes
  */
 
@@ -151,6 +172,25 @@ function readStoredUserId(key) {
     /* storage unavailable */
   }
   return "";
+}
+
+/**
+ * Reads the logged-in user id from the host app's `profile` entry, which is
+ * the usual shape ({ result: { _id, ... } }) of MERN applications. Without
+ * this, the chat would generate its own id and every cart/order it creates
+ * would belong to a different (often non-existent) user.
+ */
+function readProfileUserId() {
+  try {
+    const raw = localStorage.getItem("profile");
+    if (!raw) return "";
+    const parsed = JSON.parse(raw);
+    const result = parsed?.result ?? parsed?.user ?? parsed;
+    const id = result?._id ?? result?.id ?? result?.userId;
+    return id ? String(id).trim() : "";
+  } catch {
+    return "";
+  }
 }
 
 function generateUserId() {
@@ -386,11 +426,291 @@ function ToolBadge({ tool }) {
   );
 }
 
+// ============================================================
+// Rich rendering: tables, cards, images
+// ============================================================
+
+const URL_SPLIT_PATTERN = /(https?:\/\/[^\s<>"'`)]+)/g;
+const IMAGE_EXTENSION_PATTERN =
+  /\.(png|jpe?g|gif|webp|svg|avif|bmp|ico)(\?[^\s]*)?$/i;
+const CARD_LANGUAGES = new Set([
+  "card",
+  "cards",
+  "aig-card",
+  "aig-cards",
+  "datacard",
+]);
+const CARD_META_KEYS = new Set([
+  "title",
+  "name",
+  "heading",
+  "subtitle",
+  "subheading",
+  "description",
+  "body",
+  "text",
+  "image",
+  "imageUrl",
+  "thumbnail",
+  "photo",
+  "images",
+  "link",
+  "url",
+  "linkLabel",
+  "href",
+]);
+
+function isImageUrl(value) {
+  const url = String(value || "").trim().replace(/[.,;:!?]+$/, "");
+  return IMAGE_EXTENSION_PATTERN.test(url) || /^data:image\//i.test(url);
+}
+
+/** Image with a graceful fallback and click-to-open in a new tab. */
+function SmartImage({ src, alt = "", variant = "inline", className = "" }) {
+  const [failed, setFailed] = useState(false);
+  const source = typeof src === "string" ? src.trim() : "";
+
+  useEffect(() => setFailed(false), [source]);
+
+  if (!source) return null;
+
+  if (failed) {
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[11px] text-white/40 ${className}`}
+      >
+        <ImageOff size={12} />
+        {alt || "image unavailable"}
+      </span>
+    );
+  }
+
+  const base =
+    variant === "cover"
+      ? "block h-full w-full object-cover"
+      : "my-1.5 inline-block max-h-72 max-w-full rounded-xl border border-white/10 bg-white/[0.03] object-contain align-middle";
+
+  return (
+    <img
+      src={source}
+      alt={alt || ""}
+      title={source}
+      loading="lazy"
+      onClick={() => window.open(source, "_blank", "noopener,noreferrer")}
+      onError={() => setFailed(true)}
+      className={`${base} cursor-zoom-in transition-opacity duration-200 hover:opacity-90 ${className}`}
+    />
+  );
+}
+
+/** Turns bare URLs in text into links and image URLs into inline images. */
+function renderTextWithMedia(children, keyPrefix = "media") {
+  return Children.map(children, (child, childIndex) => {
+    if (typeof child !== "string") return child;
+    const parts = child.split(URL_SPLIT_PATTERN);
+    if (parts.length === 1) return child;
+
+    return parts.map((part, partIndex) => {
+      if (partIndex % 2 === 1) {
+        const url = part.replace(/[.,;:!?]+$/, "");
+        if (isImageUrl(url)) {
+          return (
+            <SmartImage key={`${keyPrefix}-${childIndex}-${partIndex}`} src={url} />
+          );
+        }
+        return (
+          <a
+            key={`${keyPrefix}-${childIndex}-${partIndex}`}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white underline underline-offset-2 hover:opacity-75"
+          >
+            {url}
+          </a>
+        );
+      }
+      return part;
+    });
+  });
+}
+
+function formatCardValue(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
+function normalizeCardFields(fields) {
+  if (Array.isArray(fields)) {
+    return fields
+      .map((item) => {
+        if (item && typeof item === "object") {
+          const label = item.label ?? item.name ?? item.key ?? item.field ?? "";
+          const value = item.value ?? item.text ?? item.data;
+          if (!label && value === undefined) return null;
+          return { label: String(label), value: formatCardValue(value) };
+        }
+        return { label: "", value: formatCardValue(item) };
+      })
+      .filter(Boolean);
+  }
+  if (fields && typeof fields === "object") {
+    return Object.entries(fields).map(([label, value]) => ({
+      label,
+      value: formatCardValue(value),
+    }));
+  }
+  return [];
+}
+
+/** Falls back to every primitive key of the object when `fields` is absent. */
+function cardFields(card) {
+  if (card.fields !== undefined) return normalizeCardFields(card.fields);
+  return Object.entries(card)
+    .filter(
+      ([key, value]) =>
+        !CARD_META_KEYS.has(key) && value !== null && typeof value !== "object"
+    )
+    .map(([label, value]) => ({ label, value: formatCardValue(value) }));
+}
+
+function DataCard({ card }) {
+  if (!card || typeof card !== "object") return null;
+
+  const title = card.title ?? card.name ?? card.heading ?? "";
+  const subtitle = card.subtitle ?? card.subheading ?? "";
+  const description = card.description ?? card.body ?? card.text ?? "";
+  const image =
+    [card.image, card.imageUrl, card.thumbnail, card.photo].find(
+      (value) => typeof value === "string" && value.trim()
+    ) ||
+    (Array.isArray(card.images)
+      ? card.images.find((value) => typeof value === "string" && value.trim())
+      : "");
+  const link =
+    card.link && typeof card.link === "object"
+      ? card.link
+      : card.url
+        ? { url: card.url, label: card.linkLabel }
+        : null;
+  const fields = cardFields(card);
+
+  if (
+    !title &&
+    !subtitle &&
+    !description &&
+    !image &&
+    !fields.length &&
+    !link?.url
+  ) {
+    return null;
+  }
+
+  return (
+    <article className="my-2 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-md">
+      {image && (
+        <div className="h-44 w-full overflow-hidden border-b border-white/10 bg-black/30">
+          <SmartImage
+            src={image}
+            alt={String(title || "image")}
+            variant="cover"
+          />
+        </div>
+      )}
+      <div className="p-4">
+        {title && (
+          <h4 className="text-sm font-semibold tracking-tight">
+            {String(title)}
+          </h4>
+        )}
+        {subtitle && (
+          <p className="mt-0.5 text-xs text-white/50">{String(subtitle)}</p>
+        )}
+        {description && (
+          <p className="mt-2 text-[13px] leading-relaxed text-white/70">
+            {String(description)}
+          </p>
+        )}
+        {fields.length > 0 && (
+          <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
+            {fields.map((field, index) => (
+              <div
+                key={`${field.label}-${index}`}
+                className="flex items-baseline justify-between gap-3 border-b border-white/[0.06] pb-1.5 last:border-0"
+              >
+                <dt className="text-[11px] uppercase tracking-wide text-white/40">
+                  {field.label}
+                </dt>
+                <dd className="min-w-0 break-words text-right text-[12.5px] font-medium">
+                  {field.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {link?.url && (
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-white underline underline-offset-2 hover:opacity-75"
+          >
+            {link.label || "Open"}
+            <ExternalLink size={12} />
+          </a>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function parseCardSource(raw) {
+  const text = String(raw || "").trim();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    /* fall through to substring extraction */
+  }
+  const start = text.search(/[[{]/);
+  const end = Math.max(text.lastIndexOf("}"), text.lastIndexOf("]"));
+  if (start === -1 || end <= start) return null;
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+}
+
+/** Renders a ```card / ```cards fenced JSON block as one card or a grid. */
+function CardBlock({ source }) {
+  const parsed = parseCardSource(source);
+  if (!parsed) return null;
+  const cards = (Array.isArray(parsed) ? parsed : [parsed]).filter(
+    (card) => card && typeof card === "object"
+  );
+  if (!cards.length) return null;
+
+  if (cards.length === 1) return <DataCard card={cards[0]} />;
+
+  return (
+    <div className="my-2 grid gap-3 sm:grid-cols-2">
+      {cards.map((card, index) => (
+        <DataCard key={index} card={card} />
+      ))}
+    </div>
+  );
+}
+
 function MarkdownContent({ content }) {
   const components = useMemo(
     () => ({
       p: ({ children }) => (
-        <p className="my-1.5 first:mt-0 last:mb-0">{children}</p>
+        <p className="my-2 leading-relaxed first:mt-0 last:mb-0">
+          {renderTextWithMedia(children, "p")}
+        </p>
       ),
       h1: ({ children }) => (
         <h1 className="mb-2 mt-3 text-lg font-semibold first:mt-0">
@@ -418,23 +738,59 @@ function MarkdownContent({ content }) {
       ol: ({ children }) => (
         <ol className="my-1.5 list-decimal space-y-0.5 pl-5">{children}</ol>
       ),
-      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+      li: ({ children }) => (
+        <li className="leading-relaxed">
+          {renderTextWithMedia(children, "li")}
+        </li>
+      ),
       strong: ({ children }) => (
         <strong className="font-semibold text-white">{children}</strong>
       ),
       em: ({ children }) => <em className="italic">{children}</em>,
-      a: ({ href, children }) => (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-white underline underline-offset-2 hover:opacity-75"
-        >
-          {children}
-        </a>
+      a: ({ href, children }) => {
+        // remark-gfm auto-links bare URLs, so an image URL arrives here as a
+        // link - show the picture instead of a plain anchor.
+        if (typeof href === "string" && isImageUrl(href)) {
+          return (
+            <SmartImage
+              src={href}
+              alt={typeof children === "string" ? children : ""}
+            />
+          );
+        }
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white underline underline-offset-2 hover:opacity-75"
+          >
+            {children}
+          </a>
+        );
+      },
+      img: ({ src, alt }) => (
+        <SmartImage src={typeof src === "string" ? src : ""} alt={alt || ""} />
       ),
       code: ({ inline, className, children }) => {
-        if (inline) {
+        const language = /language-([\w-]+)/
+          .exec(className || "")?.[1]
+          ?.toLowerCase();
+        const raw = String(children ?? "");
+        // react-markdown v9 dropped the `inline` prop - fall back to detecting
+        // fenced blocks by their language class / trailing newline.
+        const isInline = inline ?? (!language && !raw.includes("\n"));
+
+        if (
+          !isInline &&
+          language &&
+          CARD_LANGUAGES.has(language) &&
+          parseCardSource(raw)
+        ) {
+          return <CardBlock source={raw} />;
+        }
+
+        if (isInline) {
           return (
             <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[12.5px] text-white">
               {children}
@@ -449,25 +805,34 @@ function MarkdownContent({ content }) {
           </code>
         );
       },
-      pre: ({ children }) => <pre className="my-2 last:mb-0">{children}</pre>,
+      pre: ({ children }) => {
+        const isCard = Children.toArray(children).some(
+          (child) => child?.type === CardBlock
+        );
+        if (isCard) return <>{children}</>;
+        return <pre className="my-2 last:mb-0">{children}</pre>;
+      },
       table: ({ children }) => (
-        <div className="my-2 overflow-x-auto rounded-lg border border-white/10">
-          <table className="w-full border-collapse text-[12.5px]">
+        <div className="my-3 overflow-x-auto rounded-xl border border-white/10">
+          <table className="w-full min-w-[420px] border-collapse text-[12.5px]">
             {children}
           </table>
         </div>
       ),
       thead: ({ children }) => (
-        <thead className="bg-white/[0.06]">{children}</thead>
+        <thead className="bg-white/[0.07]">{children}</thead>
+      ),
+      tr: ({ children }) => (
+        <tr className="even:bg-white/[0.02]">{children}</tr>
       ),
       th: ({ children }) => (
-        <th className="border-b border-white/10 px-3 py-1.5 text-left font-semibold">
-          {children}
+        <th className="whitespace-nowrap border-b border-white/10 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-white/60">
+          {renderTextWithMedia(children, "th")}
         </th>
       ),
       td: ({ children }) => (
-        <td className="border-b border-white/[0.06] px-3 py-1.5 align-top">
-          {children}
+        <td className="border-b border-white/[0.06] px-3 py-2 align-top text-white/85 [&_img]:my-0 [&_img]:h-12 [&_img]:w-12 [&_img]:rounded-md [&_img]:border-0 [&_img]:object-cover">
+          {renderTextWithMedia(children, "td")}
         </td>
       ),
       hr: () => <hr className="my-3 border-white/10" />,
@@ -481,7 +846,7 @@ function MarkdownContent({ content }) {
   );
 
   return (
-    <div className="text-[14px] leading-relaxed">
+    <div className="min-w-0 text-[14px] leading-relaxed">
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {content}
       </ReactMarkdown>
@@ -516,7 +881,7 @@ function Message({ message, toolEvents, showTools }) {
       )}
 
       <div
-        className={`flex max-w-[82%] flex-col ${isUser ? "items-end" : "items-start"}`}
+        className={`flex min-w-0 max-w-[82%] flex-col ${isUser ? "items-end" : "items-start"}`}
       >
         <div
           className={`break-words rounded-2xl px-4 py-2.5 text-[14px] leading-relaxed shadow-[0_1px_0_rgba(255,255,255,0.03)] ${
@@ -609,6 +974,7 @@ export default function AiChat({
   projectName = "myApp",
   subtitle = "Ask anything about your data",
   userIdKey = "userId",
+  resolveUserId,
   onUserIdChange,
 }) {
   const [userId, setUserId] = useState("");
@@ -631,13 +997,21 @@ export default function AiChat({
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    let id = readStoredUserId(userIdKey);
-    if (!id) {
-      id = generateUserId();
-      persistUserId(userIdKey, id);
+    // Prefer the host app's logged-in user, then the stored id, then generate.
+    let id = "";
+    if (typeof resolveUserId === "function") {
+      try {
+        id = String(resolveUserId() || "").trim();
+      } catch {
+        /* host resolver failed - fall through */
+      }
     }
+    if (!id) id = readProfileUserId();
+    if (!id) id = readStoredUserId(userIdKey);
+    if (!id) id = generateUserId();
+    persistUserId(userIdKey, id);
     setUserId(id);
-  }, [userIdKey]);
+  }, [userIdKey, resolveUserId]);
 
   useEffect(() => {
     const el = scrollRef.current;

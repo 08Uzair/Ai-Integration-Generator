@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { FileUp, ClipboardPaste } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -51,7 +51,7 @@ export function RouteFileImporter({ onImport }) {
   };
 
   return (
-    <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/30 p-4">
+    <div className="rounded-xl border border-dashed border-zinc-800 bg-zinc-950/30 p-4">
       <p className="text-xs font-medium text-slate-300">
         Import routes from a file <span className="font-normal text-slate-500">(Express/Node routes, decorators, plain text)</span>
       </p>
@@ -59,13 +59,13 @@ export function RouteFileImporter({ onImport }) {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-slate-700"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-zinc-800"
         >
           <FileUp size={13} /> Upload route file
         </button>
         <input ref={fileRef} type="file" accept=".js,.ts,.jsx,.tsx,.mjs,.cjs,.txt,.json,.routes" className="hidden" onChange={handleFile} />
         {!pasted && (
-          <button type="button" onClick={() => setPasted(true)} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-indigo-400 transition hover:text-indigo-300">
+          <button type="button" onClick={() => setPasted(true)} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-emerald-400 transition hover:text-emerald-300">
             <ClipboardPaste size={13} /> or paste routes
           </button>
         )}
@@ -77,7 +77,7 @@ export function RouteFileImporter({ onImport }) {
               rows={5}
               spellCheck={false}
               placeholder={"router.get('/products', listProducts)\napp.post('/orders', createOrder)\nDELETE /cart/:id\n@router.put('/users/:id')"}
-              className="w-full rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 font-mono text-xs text-slate-100 shadow-sm transition placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-900/60 px-3 py-2 font-mono text-xs text-slate-100 shadow-sm transition placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               aria-label="Pasted routes"
             />
             <div className="flex flex-wrap items-center gap-2">

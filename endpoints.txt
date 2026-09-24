@@ -1,0 +1,31 @@
+// USERS
+export const fetchUser = () => API.get("/api/v1/user");
+export const fetchUserById = (id) => API.get(`/api/v1/user/${id}`);
+
+
+
+// PRODUCTS
+export const fetchProducts = () => API.get("/api/v1/products");
+export const fetchProductsById = (id) => API.get(`/api/v1/products/${id}`);
+
+
+// CART
+export const addCartProducts = (newProducts) => API.post("/api/v1/cart", newProducts);
+export const fetchCartProducts = () => API.get("/api/v1/cart");
+export const fetchCartProductsByUserId = (userId) => API.get(`/api/v1/cart/${userId}`);
+export const deleteCartProducts = (id) => API.delete(`/api/v1/cart/${id}`);
+export const deleteCartProductByUserId = (userId) =>
+  API.delete(`/api/v1/cart/${userId}`);
+export const updateCartProducts = (product, user) => API.put(`/api/v1/cart/${id}`);
+
+
+// Orders
+export const createOrder = (newProducts) => API.post("/api/v1/orders", newProducts);
+
+// Category
+export const fetchCategories = () => API.get("/api/v1/category/");
+export const fetchCategoryById = (id) => API.get(`/api/v1/category/${id}`);
+
+// Inbox
+export const createInbox = (newInbox) => API.post("/api/v1/inbox", newInbox);
+export const fetchInbox = () => API.get("/api/v1/inbox");

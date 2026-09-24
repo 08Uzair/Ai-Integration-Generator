@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { apiFetch, buildConfig } from '../api.js';
+import { buildPreview } from '../run.js';
 import { log, note, spinner, select, promptOrCancel, stepHeader, gap } from '../ui.js';
 import { renderTable } from '../table.js';
 
@@ -7,10 +7,8 @@ import { renderTable } from '../table.js';
 export async function askAfterFailure(what, backLabel) {
   gap();
   log.message(
-    chalk.dim('The backend API on http://localhost:4000 is required for this step.')
+    chalk.dim('Generation runs locally - check the values entered in the previous steps.')
   );
-  log.message(chalk.dim('Start it from the repository root with:'));
-  log.message(chalk.dim('  npm run dev:backend     (or:  .\\run.ps1)'));
   gap();
   const choice = await promptOrCancel(select, {
     message: `${what} failed - what next?`,
@@ -33,11 +31,7 @@ export async function stepPreview(state) {
 
   let result;
   try {
-    result = await apiFetch('/api/integrations/preview', {
-      method: 'POST',
-      body: buildConfig(state),
-      timeoutMs: 30_000,
-    });
+    result = await buildPreview(state);
     s.stop('Preview built.');
     state.preview = result;
   } catch (err) {

@@ -18,7 +18,8 @@ const pkg = require('../package.json');
 const HELP = `${chalk.bold(pkg.name)} v${pkg.version}
 
 Interactive terminal wizard - generates a customized AI Server, MCP Server,
-AI Chat Client and documentation for any existing API (all 8 steps run here).
+AI Chat Client and documentation for any existing API. All 8 steps run here
+and everything is generated locally - no backend or database required.
 
 Usage:
   ${chalk.cyan('ai-generate')}          start the wizard
@@ -29,11 +30,11 @@ Options:
   -h, --help      show this help
 
 Environment:
-  API_URL         backend API base URL (default http://localhost:4000)
+  ALLOWED_PRIVATE_HOSTS   extra private hosts allowed for probes (comma-separated)
 
 Examples:
   ${chalk.cyan('ai-generate')}
-  ${chalk.cyan('$env:API_URL = "https://api.example.com"; ai-generate')}   (PowerShell)
+  ${chalk.cyan('$env:ALLOWED_PRIVATE_HOSTS = "192.168.1.50"; ai-generate')}   (PowerShell)
 `;
 
 const args = process.argv.slice(2);

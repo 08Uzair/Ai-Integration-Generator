@@ -35,9 +35,10 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
       args:
+        # Full stack: the browser talks to the backend on port 4000.
         NEXT_PUBLIC_API_URL: http://localhost:4000
     container_name: aig-frontend
     restart: unless-stopped

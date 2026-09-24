@@ -1,7 +1,8 @@
 import path from 'node:path';
+import fs from 'node:fs/promises';
 import chalk from 'chalk';
 import { spawnSync } from 'node:child_process';
-import { downloadZip } from '../api.js';
+import { artifactFor } from '../run.js';
 import {
   log,
   note,
@@ -44,20 +45,20 @@ function extractZip(zipPath, destDir) {
   }
 }
 
-/** Step 8 - download the complete project or individual services. */
+/** Step 8 - copy the generated project or individual services locally. */
 export async function stepDownload(state) {
-  const slug = state.generation?.project?.projectName || slugify(state.name);
+  const slug = slugify(state.generation?.projectName || state.name);
   stepHeader(7);
 
   const packages = await promptOrCancel(multiselect, {
-    message: 'Select packages to download:',
+    message: 'Select packages to copy:',
     options: PACKAGES,
     required: true,
     initialValues: ['complete'],
   });
 
   const dir = await promptOrCancel(text, {
-    message: 'Download folder:',
+    message: 'Output folder:',
     placeholder: path.join(process.cwd(), slug),
     initialValue: state.downloadDir || path.join(process.cwd(), slug),
   });
@@ -65,31 +66,33 @@ export async function stepDownload(state) {
 
   const saved = [];
   for (const kind of packages) {
-    const fileName = `${slug}-${kind}.zip`;
-    const dest = path.join(dir, fileName);
+    const artifact = artifactFor(state.generation, kind);
+    if (!artifact) {
+      log.error(`No artifact available for "${kind}" - run the Generate step again.`);
+      continue;
+    }
+    const dest = path.join(dir, artifact.fileName);
     const s = spinner();
-    s.start(`Downloading ${fileName} ...`);
+    s.start(`Copying ${artifact.fileName} ...`);
     try {
-      const info = await downloadZip(
-        `/api/integrations/${state.generation.integrationId}/download?package=${kind}`,
-        dest
-      );
-      s.stop(`${fileName} saved.`);
-      log.success(`  ${fileName} · ${formatBytes(info.sizeBytes)}`);
+      await fs.mkdir(dir, { recursive: true });
+      await fs.copyFile(artifact.filePath, dest);
+      s.stop(`${artifact.fileName} saved.`);
+      log.success(`  ${artifact.fileName} · ${formatBytes(artifact.sizeBytes)}`);
       saved.push(dest);
     } catch (err) {
-      s.stop(`Download of ${fileName} failed.`);
+      s.stop(`Copying ${artifact.fileName} failed.`);
       log.error(err.message);
     }
   }
 
   if (!saved.length) {
-    log.error('No packages were downloaded - check that the backend is running.');
+    log.error('No packages were saved - run the Generate step first.');
     return;
   }
 
   const extract = await promptOrCancel(confirm, {
-    message: `Extract the downloaded ZIP(s) into ${dir}?`,
+    message: `Extract the saved ZIP(s) into ${dir}?`,
     initialValue: true,
   });
 
@@ -103,7 +106,7 @@ export async function stepDownload(state) {
       chalk.gray(`Directory: ${dir}`),
       ...saved.map((f) => chalk.gray(`  · ${path.basename(f)}`)),
       chalk.gray(''),
-      chalk.dim('Generated artifacts are cleaned up automatically after 24h.'),
+      chalk.dim('Everything was generated locally - no backend or database involved.'),
     ],
     'Download complete'
   );

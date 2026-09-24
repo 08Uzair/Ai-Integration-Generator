@@ -18,7 +18,7 @@ const envSchema = z.object({
 });
 
 const parsed = envSchema.safeParse(process.env);
-
+ 
 if (!parsed.success) {
   // Fail fast with a readable list of missing/invalid variables.
   const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
